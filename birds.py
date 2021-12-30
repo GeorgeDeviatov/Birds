@@ -15,7 +15,9 @@ class Bird:
         self.degree = degree
         self.screen = screen
         self.birds = birds
-        self.speed = 2
+        self.slow_speed = 2
+        self.fast_speed = 10
+        self.speed = self.slow_speed
         self.need = True
         self.num = num
         self.go = 0
@@ -43,9 +45,9 @@ class Bird:
                     if dist>most:
                         long = b
         if long!=None:
-            self.speed = 10
+            self.speed = self.fast_speed
             return True,long
-        self.speed = 2
+        self.speed = self.slow_speed
         return False,long
     
     
@@ -55,9 +57,9 @@ class Bird:
                 dist = math.sqrt((b.pos[0]-self.pos[0])**2+(b.pos[1]-self.pos[1])**2)
 
                 if dist < 40:
-                    self.speed = 10
+                    self.speed = self.fast_speed
                     return True,b
-        self.speed = 2
+        self.speed = self.slow_speed
         return False,b
     
     
@@ -109,7 +111,8 @@ class Bird:
 
 if __name__ == "__main__":
     birds = []
-    for i in range(50):#Make list of birds
+    count = 50
+    for i in range(count):#Make list of birds
         new_bird = Bird([random.randint(0,width),random.randint(0,height)],0,screen,birds,i)
         birds.append(new_bird)
     
