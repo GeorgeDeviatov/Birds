@@ -5,19 +5,55 @@ import sys
 import random
 pg.init()
 
-width = 1300
-height = 900
-screen = pg.display.set_mode((width,height))
-
+def get_rules():
+    print("Choosing rules (for standart settings press Enter in every question)")
+    
+    try:
+        print("Choosing size of screen")
+        width,height = map(input("Enter width and height of screen ").split(),int)
+    except:
+        width,height = 1200,800
+    
+    
+    try:
+        print("Choosing count of birds")
+        count = int(input("Enter count of birds "))
+    except:
+        count = 50
+    
+    
+    try:
+        print("Accelerate birds at different conditions?")
+        acceleration =  int(input("0 - never, 1 - if too close, 2 - if too far "))
+        if acceleration not in [0,1,2]:
+            acceleration = 0
+    except:
+        acceleration = 0
+    
+    
+    try:
+        print("Choosing speed")
+        base_speed = int(input("Choose base speed "))
+        fast_speed = base_speed
+        if acceleration != 0:
+            fast_speed = int(input("Choose fast speed "))
+    except:
+        base_speed = 2
+        fast_speed = 10
+    
+    
+    return [(width,height),count,acceleration,base_speed,fast_speed]        
 class Bird:
-    def __init__(self,pos,degree,screen,birds,num):
+    def __init__(self,pos,degree,base_speed,fast_speed,
+                 acceleration,screen,birds,num):
         self.pos = pos
         self.degree = degree
         self.screen = screen
         self.birds = birds
-        self.slow_speed = 2
-        self.fast_speed = 10
+        self.slow_speed = base_speed
+        self.fast_speed = fast_speed
         self.speed = self.slow_speed
+        self.ac = acceleration
         self.need = True
         self.num = num
         self.go = 0
@@ -36,6 +72,8 @@ class Bird:
                          (self.pos[0]+2*math.cos(d3),self.pos[1]+2*math.sin(d3))))
     
     def check_far(self):#Find the farthest bird
+        if self.go!=0:
+            return False,None
         long = None
         most = 0
         for b in self.birds:
@@ -45,30 +83,43 @@ class Bird:
                     if dist>most:
                         long = b
         if long!=None:
-            #self.speed = self.fast_speed
             return True,long
-        #self.speed = self.slow_speed
         return False,long
     
     
     def check_close(self):#Search any too close bird
+        if self.go != 0:
+            return False,None
         for b in self.birds:
             if self.num!=b.num:
                 dist = math.sqrt((b.pos[0]-self.pos[0])**2+(b.pos[1]-self.pos[1])**2)
 
                 if dist < 40:
-                    #self.speed = self.fast_speed
                     return True,b
-        #self.speed = self.slow_speed
         return False,b
     
     
     def change_degree(self):#Change birds degree if each other too close or too far
-        far,b = self.check_far()
-        if far and self.go == 0:
+        far,b1 = self.check_far()
+        close,b2 = self.check_close()
+        if self.ac != 0:
+            if self.ac == 1:
+                if close:
+                    self.speed = self.fast_speed
+                elif self.go == 0:
+                    self.speed = self.slow_speed
+            elif self.ac == 2:
+                if far and not(close):
+                    self.speed = self.fast_speed
+                else:
+                    self.speed = self.slow_speed
+        
+        
+        
+        if far:
             old = self.degree
-            first = b.pos[1] - self.pos[1]
-            second = b.pos[0] - self.pos[0]
+            first = b1.pos[1] - self.pos[1]
+            second = b1.pos[0] - self.pos[0]
             if second == 0:
                 second = 1
             self.degree = math.degrees(math.atan(first/second))
@@ -86,18 +137,13 @@ class Bird:
             self.go = int(razn/10)
                 
             
-        close,b = self.check_close()
-        if close and self.go == 0:
+
+        if close:
             self.go = 18
             self.degree += 180
             if self.degree > 360:
                 self.degree-=360
         self.need = far or close
-        if self.need:
-            self.speed = self.fast_speed
-        else:
-            self.speed = self.slow_speed
-    
     def move(self):#Move bird
 
         self.pos[0] += self.speed*math.cos(self.degree)
@@ -114,12 +160,23 @@ class Bird:
 
 
 if __name__ == "__main__":
-    birds = []
-    count = 50
-    for i in range(count):#Make list of birds
-        new_bird = Bird([random.randint(0,width),random.randint(0,height)],0,screen,birds,i)
-        birds.append(new_bird)
+    rules = get_rules()#0 - size, 1 - count, 2 - acceleration, 3 - base_speed, 4 - fast_speed
     
+    width = rules[0][0]
+    height = rules[0][1]
+    screen = pg.display.set_mode((width,height))
+    birds = []
+    count = rules[1]
+    base_speed = rules[3]
+    fast_speed = rules[4]
+    acceleration = rules[2]
+    for i in range(count):#Make list of birds
+        new_bird = Bird([random.randint(0,width),random.randint(0,height)],0,
+                        base_speed,fast_speed,acceleration,screen,birds,i)
+        birds.append(new_bird)
+    '''
+    for a in birds:
+        a.birds = birds'''
     clock = pg.time.Clock()
     while True:
         for b in birds:
