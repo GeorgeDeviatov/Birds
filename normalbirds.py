@@ -45,9 +45,9 @@ class Bird:
                     if dist>most:
                         long = b
         if long!=None:
-            self.speed = self.fast_speed
+            #self.speed = self.fast_speed
             return True,long
-        self.speed = self.slow_speed
+        #self.speed = self.slow_speed
         return False,long
     
     
@@ -57,9 +57,9 @@ class Bird:
                 dist = math.sqrt((b.pos[0]-self.pos[0])**2+(b.pos[1]-self.pos[1])**2)
 
                 if dist < 40:
-                    self.speed = self.fast_speed
+                    #self.speed = self.fast_speed
                     return True,b
-        self.speed = self.slow_speed
+        #self.speed = self.slow_speed
         return False,b
     
     
@@ -93,19 +93,23 @@ class Bird:
             if self.degree > 360:
                 self.degree-=360
         self.need = far or close
+        if self.need:
+            self.speed = self.fast_speed
+        else:
+            self.speed = self.slow_speed
     
     def move(self):#Move bird
-        if self.need:
-            self.pos[0] += self.speed*math.cos(self.degree)
-            self.pos[1] += self.speed*math.sin(self.degree)
-            if self.pos[0]>width:
-                self.pos[0] = 0
-            elif self.pos[0]<0:
-                self.pos[0] = width
-            if self.pos[1]>height:
-                self.pos[1] = 0
-            elif self.pos[1]<0:
-                self.pos[1] = height
+
+        self.pos[0] += self.speed*math.cos(self.degree)
+        self.pos[1] += self.speed*math.sin(self.degree)
+        if self.pos[0]>width:
+            self.pos[0] = 0
+        elif self.pos[0]<0:
+            self.pos[0] = width
+        if self.pos[1]>height:
+            self.pos[1] = 0
+        elif self.pos[1]<0:
+            self.pos[1] = height
 
 
 
