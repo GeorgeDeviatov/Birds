@@ -6,43 +6,32 @@ import random
 pg.init()
 
 def get_rules():
+    #0 - print, 1 - input, 2 - standart setting
+    questions = [["Choosing width of screen","Enter width of screen (standart 1200) ",1200],
+                 ["Choosing height of screen","Enter height of screen (standart 800) ",800],
+                 ["Choosing count of birds","Enter count of birds (standart 50) ",50],
+                 ["Accelerate birds at different conditions?","0 - never, 1 - if too close, 2 - if too far (standart 0) ",0],
+                 ["Choosing base speed","Enter base speed (standart 2) ",2],
+                 ["Choosing fast speed","Enter fast_speed (standart 10) ",10],
+                 ["Choosing chance of random change birds degree","Enter percent chance (standart - 1)",1]]
     print("Choosing rules (for standart settings press Enter in every question)")
     
-    try:
-        print("Choosing size of screen")
-        width,height = map(input("Enter width and height of screen ").split(),int)
-    except:
-        width,height = 1200,800
+    rules = []
+    
+    for q in questions:
+        print(q[0])
+        
+        try:
+            new_rule = int(input(q[1]))
+            if new_rule < 0:
+                new_rule = q[2]
+        except:
+            new_rule = q[2]
+        rules.append(new_rule)
+
     
     
-    try:
-        print("Choosing count of birds")
-        count = int(input("Enter count of birds "))
-    except:
-        count = 50
-    
-    
-    try:
-        print("Accelerate birds at different conditions?")
-        acceleration =  int(input("0 - never, 1 - if too close, 2 - if too far "))
-        if acceleration not in [0,1,2]:
-            acceleration = 0
-    except:
-        acceleration = 0
-    
-    
-    try:
-        print("Choosing speed")
-        base_speed = int(input("Choose base speed "))
-        fast_speed = base_speed
-        if acceleration != 0:
-            fast_speed = int(input("Choose fast speed "))
-    except:
-        base_speed = 2
-        fast_speed = 10
-    
-    
-    return [(width,height),count,acceleration,base_speed,fast_speed]        
+    return rules       
 class Bird:
     def __init__(self,pos,degree,base_speed,fast_speed,
                  acceleration,screen,birds,num):
@@ -130,7 +119,7 @@ class Bird:
             elif second<0:
                 self.degree+=90
             razn1 = abs(self.degree-old)
-            razn2 = (360-self.degree) + (360-old)
+            razn2 = 360 - abs(-(360-self.degree) + (360-old))
             razn = razn1
             if razn2<razn1:
                 razn = razn2
@@ -160,23 +149,30 @@ class Bird:
 
 
 if __name__ == "__main__":
-    rules = get_rules()#0 - size, 1 - count, 2 - acceleration, 3 - base_speed, 4 - fast_speed
+    rules = get_rules()#0 - width, 1 - height, 2 - count, 3 - acceleration,
+    #4 - base_speed, 5 - fast_speed, 6 - random
     
-    width = rules[0][0]
-    height = rules[0][1]
+    width = rules[0]
+    height = rules[1]
     screen = pg.display.set_mode((width,height))
     birds = []
-    count = rules[1]
-    base_speed = rules[3]
-    fast_speed = rules[4]
-    acceleration = rules[2]
+    count = rules[2]
+    base_speed = rules[4]
+    fast_speed = rules[5]
+    acceleration = rules[3]
+    rand = int(100/rules[6])
+    print(100/1,rules[6])
+    rand -= 1
+    if rand<1:
+        rand = 1
+    print(rand)
     for i in range(count):#Make list of birds
         new_bird = Bird([random.randint(0,width),random.randint(0,height)],0,
                         base_speed,fast_speed,acceleration,screen,birds,i)
         birds.append(new_bird)
-    '''
+    
     for a in birds:
-        a.birds = birds'''
+        a.birds = birds
     clock = pg.time.Clock()
     while True:
         for b in birds:
@@ -185,9 +181,16 @@ if __name__ == "__main__":
             b.draw()
             
             
-            a = random.randint(0,60)#Some random
-            if a == 1:
-                b.degrees = random.randint(0,360)
+            a = random.randint(0,100)#Some random
+            if a == 0:
+                olddegree = b.degree
+                b.degree = random.randint(0,360)
+                razn1 = abs(olddegree - b.degree)
+                razn2 = 360 - abs(-(360 - olddegree)+ (360 - b.degree))
+                razn = razn1
+                if razn2<razn1:
+                    razn = razn2
+                b.go = int(razn/10)
             else:
                 b.change_degree()
             b.move()
