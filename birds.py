@@ -5,9 +5,65 @@ import sys
 import random
 pg.init()
 
+def get_rules_sc(screen,questions):
+    screen.fill((0,0,0))
+    rules = []
+    clock = pg.time.Clock()
+    for q in questions:
+        var = ""
+        while True:
+            n = False
+            font = pg.font.SysFont('c059',1200//len(q[0])*2)
+            f = font.render(q[0],False,(255,0,0))
+            screen.blit(f,(0,800//8))
+            
+            font_2 = pg.font.SysFont('c059', 1200//len(q[1])*2)
+            f_2 = font_2.render(q[1],False,(255,0,0))
+            screen.blit(f_2,(0,(800//4)*3))
+            
+            if len(var) > 0:
+                size = 50
+                if 1200//len(var) < size:
+                    size = 1200//len(var)
+                font_3 = pg.font.SysFont('c059', size)
+                f_3 = font_3.render(var, True, (0,255,0))
+                screen.blit(f_3,(0,800//2))
+            
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    pg.quit()
+            
+                if event.type == pg.KEYDOWN:
+                    if pg.key.name(event.key) == "return":
+                        n = True
+                    elif pg.key.name(event.key) == "backspace":
+                        var = var[0:len(var)-1]
+                    else:
+                        var += pg.key.name(event.key)
+            if n:
+                break
+            
+            pg.display.flip()
+            screen.fill((0,0,0))
+            clock.tick(30)
+        
+        try:
+            new_rule = int(var)
+            if new_rule < 0:
+                new_rule = q[2]
+        except:
+            new_rule = q[2]
+        
+        rules.append(new_rule)
+    
+    return rules
+
+
+
 def get_rules():
     #0 - print, 1 - input, 2 - standart setting
-    questions = [["Choosing width of screen","Enter width of screen (standart 1200) ",1200],
+    questions = [["Settins","Write you value of setting and press ENTER to go to next setting",0],
+                 ["Choosing width of screen","Enter width of screen (standart 1200) ",1200],
                  ["Choosing height of screen","Enter height of screen (standart 800) ",800],
                  ["Choosing count of birds","Enter count of birds (standart 50) ",50],
                  ["Accelerate birds at different conditions?","0 - never, 1 - if too close, 2 - if too far (standart 0) ",0],
@@ -46,6 +102,8 @@ class Bird:
         self.need = True
         self.num = num
         self.go = 0
+
+                
     
     def draw(self):#Draw bird
         d1 = math.radians(self.degree)
@@ -149,23 +207,33 @@ class Bird:
 
 
 if __name__ == "__main__":
-    rules = get_rules()#0 - width, 1 - height, 2 - count, 3 - acceleration,
+    screen = pg.display.set_mode((1200,800))
+    #rules = get_rules()#0 - width, 1 - height, 2 - count, 3 - acceleration,
     #4 - base_speed, 5 - fast_speed, 6 - random
+    questions = [["Settins","Write you value of setting and press ENTER to go to next setting",0],
+            ["Choosing width of screen","Enter width of screen (standart 1200) ",1200],
+             ["Choosing height of screen","Enter height of screen (standart 800) ",800],
+             ["Choosing count of birds","Enter count of birds (standart 50) ",50],
+             ["Accelerate birds at different conditions?","0 - never, 1 - if too close, 2 - if too far (standart 0) ",0],
+             ["Choosing base speed","Enter base speed (standart 2) ",2],
+             ["Choosing fast speed","Enter fast_speed (standart 10) ",10],
+             ["Choosing chance of random change birds degree","Enter percent chance (standart - 1)",1]]
     
-    width = rules[0]
-    height = rules[1]
+    rules = get_rules_sc(screen, questions)
+    
+    nothing = rules[0]
+    width = rules[1]
+    height = rules[2]
     screen = pg.display.set_mode((width,height))
     birds = []
-    count = rules[2]
-    base_speed = rules[4]
-    fast_speed = rules[5]
-    acceleration = rules[3]
-    rand = int(100/rules[6])
-    print(100/1,rules[6])
+    count = rules[3]
+    base_speed = rules[5]
+    fast_speed = rules[6]
+    acceleration = rules[4]
+    rand = int(100/rules[7])
     rand -= 1
     if rand<1:
         rand = 1
-    print(rand)
     for i in range(count):#Make list of birds
         new_bird = Bird([random.randint(0,width),random.randint(0,height)],0,
                         base_speed,fast_speed,acceleration,screen,birds,i)
